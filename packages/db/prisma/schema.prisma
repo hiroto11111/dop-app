@@ -1,0 +1,58 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Organization {
+  id                    String    @id @default(cuid())
+  name                  String
+  invoiceRegistrationNo String?
+  defaultCurrency       String    @default("JPY")
+  settingsJson          Json?
+  createdAt             DateTime  @default(now())
+  customers             Customer[]
+  invoices              Invoice[]
+}
+
+model Customer {
+  id              String       @id @default(cuid())
+  organizationId  String
+  code            String
+  name            String
+  billingEmail    String?
+  postalAddress   String?
+  paymentTermDays Int          @default(30)
+  taxProfileJson  Json?
+  organization    Organization @relation(fields: [organizationId], references: [id])
+  invoices        Invoice[]
+
+  @@unique([organizationId, code])
+  @@index([organizationId, name])
+}
+
+model Invoice {
+  id             String       @id @default(cuid())
+  organizationId String
+  customerId     String
+  invoiceNumber  String
+  issueDate      DateTime
+  dueDate        DateTime
+  currency       String       @default("JPY")
+  status         String       @default("draft")
+  subtotal       Int
+  taxTotal       Int
+  total          Int
+  pdfStorageKey  String?
+  payloadJson    Json
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  customer       Customer     @relation(fields: [customerId], references: [id])
+
+  @@unique([organizationId, invoiceNumber])
+  @@index([organizationId, issueDate])
+  @@index([organizationId, total])
+}
