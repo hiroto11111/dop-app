@@ -5,5 +5,7 @@ build/
 coverage/
 .env
 .env.local
+.env.example
 *.log
 *.tsbuildinfo
+AGENTS.md
